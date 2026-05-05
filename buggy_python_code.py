@@ -6,11 +6,19 @@ import urllib3
 
 app = flask.Flask(__name__)
 
+ALLOWED_URLS = {
+    "google": "https://www.google.com",
+    "example": "https://example.com",
+}
+
 
 @app.route("/")
 def index():
     version = flask.request.args.get("urllib_version")
-    url = flask.request.args.get("url")
+    target = flask.request.args.get("url")
+    url = ALLOWED_URLS.get(target)
+    if url is None:
+        return "Invalid target", 400
     return fetch_website(version, url)
 
         
@@ -31,10 +39,13 @@ def fetch_website(urllib_version, url):
     else:
         raise ValueError("Unsupported urllib version")
     # Fetch and print the requested URL
- 
+    if url not in ALLOWED_URLS.values():
+        raise ValueError("URL is not allowed")
+
     try: 
         http = urllib.PoolManager()
         r = http.request('GET', url)
+        return r.data
     except:
         print('Exception')
 
